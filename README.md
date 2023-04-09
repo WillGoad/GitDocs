@@ -4,11 +4,11 @@ Git Docs is a free, open-source online text editor built with React Typescript, 
 
 ## Features
 
-    Login with Github to connect your Github account and save your documents to your Github repositories. (Coming Soon!)
-    Create, edit, and format documents with an intuitive, easy-to-use interface.
-    Real-time collaboration with other users on the same document. (Coming Soon!)
-    Access your documents from anywhere with an internet connection. (Coming Soon!)
-    Choose to securely store your documents in public or private repositories. (Coming Soon!)
++ Login with Github to connect your Github account and save your documents to your Github repositories. (Coming Soon!)
++ Create, edit, and format documents with an intuitive, easy-to-use interface.
++ Real-time collaboration with other users on the same document. (Coming Soon!)
++ Access your documents from anywhere with an internet connection. (Coming Soon!)
++ Choose to securely store your documents in public or private repositories. (Coming Soon!)
 
 ## Getting Started
 
