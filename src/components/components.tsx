@@ -1,8 +1,16 @@
-import React from 'react'
+import React, { PropsWithChildren, forwardRef } from 'react'
 import ReactDOM from 'react-dom'
 import { cx, css } from '@emotion/css'
 
-export const Button = React.forwardRef(
+interface ButtonProps {
+  className?: string
+  active: boolean
+  reversed?: boolean
+  onMouseDown: (event: any) => void
+}
+
+
+export const Button = forwardRef<HTMLSpanElement, PropsWithChildren<ButtonProps>>(
   (
     {
       className,
@@ -32,17 +40,22 @@ export const Button = React.forwardRef(
   )
 )
 
-export const EditorValue = React.forwardRef(
+interface EditorValueProps {
+  className?: string
+  value?: any
+}
+
+export const EditorValue = forwardRef<HTMLDivElement, EditorValueProps>(
   (
     {
       className,
       value,
       ...props
-    },
+    }: EditorValueProps,
     ref
   ) => {
     const textLines = value.document.nodes
-      .map((node) => node.text)
+      .map((node: any) => node.text)
       .toArray()
       .join('\n')
     return (
@@ -85,9 +98,14 @@ export const EditorValue = React.forwardRef(
   }
 )
 
-export const Icon = React.forwardRef(
+interface IconProps {
+  className?: string
+  
+}
+
+export const Icon: Function = forwardRef<HTMLSpanElement, IconProps>(
   (
-    { className, ...props },
+    { className,  ...props }: IconProps,
     ref
   ) => (
     <span
@@ -105,9 +123,13 @@ export const Icon = React.forwardRef(
   )
 )
 
-export const Instruction = React.forwardRef(
+interface InstructionProps {
+  className?: string
+}
+
+export const Instruction = forwardRef<HTMLDivElement, InstructionProps>(
   (
-    { className, ...props },
+    { className, ...props }: InstructionProps,
     ref
   ) => (
     <div
@@ -127,9 +149,13 @@ export const Instruction = React.forwardRef(
   )
 )
 
-export const Menu = React.forwardRef(
+interface MenuProps {
+  className?: string
+}
+
+export const Menu = forwardRef<HTMLDivElement, PropsWithChildren<MenuProps>>(
   (
-    { className, ...props },
+    { className, ...props }: MenuProps,
     ref
   ) => (
     <div
@@ -151,15 +177,23 @@ export const Menu = React.forwardRef(
   )
 )
 
-export const Portal = ({ children }) => {
+interface PortalProps {
+  children: React.ReactNode
+}
+
+export const Portal = ({ children }: PortalProps) => {
   return typeof document === 'object'
     ? ReactDOM.createPortal(children, document.body)
     : null
 }
 
-export const Toolbar = React.forwardRef(
+interface ToolbarProps {
+  className?: string
+}
+
+export const Toolbar = forwardRef<HTMLDivElement, PropsWithChildren<ToolbarProps>>(
   (
-    { className, ...props },
+    { className, ...props }: ToolbarProps,
     ref
   ) => (
     <Menu

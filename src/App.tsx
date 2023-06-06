@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import RichTextCanvas from './components/richtext.jsx';
+import RichTextCanvas from './components/richtext';
 import { CanvasContainerFlex, CanvasContainerInner } from './App.styled';
 
 function App() {

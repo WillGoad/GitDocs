@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, ReactNode } from 'react'
 import isHotkey from 'is-hotkey'
 import { Editable, withReact, useSlate, Slate } from 'slate-react'
 import {
@@ -6,14 +6,18 @@ import {
   Transforms,
   createEditor,
   Element as SlateElement,
+  BaseEditor,
+  Node,
+  Descendant
 } from 'slate'
 import { withHistory } from 'slate-history'
 import { Code, FormatAlignCenter, FormatAlignJustify, FormatAlignLeft, FormatAlignRight, FormatBold, FormatItalic, FormatListBulleted, FormatListNumbered, FormatQuote, FormatUnderlined, LooksOne, LooksTwo } from '@mui/icons-material';
 
-import { Button, Icon, Toolbar } from './components.jsx'
-import { MarginContainer } from './richtext.styled.jsx'
+import { Button, Icon, Toolbar } from './components';
+import { MarginContainer } from './richtext.styled';
+import { BaseText } from 'slate'
 
-const HOTKEYS = {
+const HOTKEYS: { [index: string]: string } = {
   'mod+b': 'bold',
   'mod+i': 'italic',
   'mod+u': 'underline',
@@ -24,8 +28,8 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list']
 const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify']
 
 const RichTextCanvas = () => {
-  const renderElement = useCallback(props => <Element {...props} />, [])
-  const renderLeaf = useCallback(props => <Leaf {...props} />, [])
+  const renderElement = useCallback((props: any) => <Element {...props} />, [])
+  const renderLeaf = useCallback((props: any) => <Leaf {...props} />, [])
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
 
   return (
@@ -56,7 +60,7 @@ const RichTextCanvas = () => {
             for (const hotkey in HOTKEYS) {
               if (isHotkey(hotkey, event)) {
                 event.preventDefault()
-                const mark = HOTKEYS[hotkey]
+                const mark: any = HOTKEYS[hotkey]
                 toggleMark(editor, mark)
               }
             }
@@ -67,73 +71,77 @@ const RichTextCanvas = () => {
   )
 }
 
-const toggleBlock = (editor, format) => {
+const toggleBlock = (editor: BaseEditor, format: string) => {
+  //Booleans
+  const isList: boolean = LIST_TYPES.includes(format);
+  const isAlignment: boolean = TEXT_ALIGN_TYPES.includes(format);
+
+
   const isActive = isBlockActive(
     editor,
     format,
-    TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type'
-  )
-  const isList = LIST_TYPES.includes(format)
+    isAlignment ? 'align' : 'type'
+  );
 
   Transforms.unwrapNodes(editor, {
     match: n =>
       !Editor.isEditor(n) &&
       SlateElement.isElement(n) &&
-      LIST_TYPES.includes(n.type) &&
-      !TEXT_ALIGN_TYPES.includes(format),
+      !isAlignment,
     split: true,
-  })
-  let newProperties;
-  if (TEXT_ALIGN_TYPES.includes(format)) {
+  });
+  let newProperties: Partial<{ type: string | undefined; align: string | undefined }> = {};
+  if (isAlignment) {
     newProperties = {
       align: isActive ? undefined : format,
-    }
+    };
   } else {
     newProperties = {
       type: isActive ? 'paragraph' : isList ? 'list-item' : format,
-    }
+    };
   }
-  Transforms.setNodes(editor, newProperties)
+  Transforms.setNodes(editor, newProperties as Partial<Node>);
 
   if (!isActive && isList) {
-    const block = { type: format, children: [] }
-    Transforms.wrapNodes(editor, block)
+    const block = { type: format, children: [] };
+    Transforms.wrapNodes(editor, block);
   }
 }
 
-const toggleMark = (editor, format) => {
-  const isActive = isMarkActive(editor, format)
+const toggleMark = (editor: BaseEditor, format: string) => {
+  const isActive = isMarkActive(editor, format);
 
   if (isActive) {
-    Editor.removeMark(editor, format)
+    Editor.removeMark(editor, format);
   } else {
-    Editor.addMark(editor, format, true)
+    Editor.addMark(editor, format, true);
   }
 }
 
-const isBlockActive = (editor, format, blockType = 'type') => {
-  const { selection } = editor
-  if (!selection) return false
+const isBlockActive = (editor: BaseEditor, format: string, blockType: string = 'type') => {
+  const { selection } = editor;
+  if (!selection) return false;
 
   const [match] = Array.from(
     Editor.nodes(editor, {
       at: Editor.unhangRange(editor, selection),
-      match: n =>
+      match: (n) =>
         !Editor.isEditor(n) &&
         SlateElement.isElement(n) &&
-        n[blockType] === format,
+        n[blockType as keyof Descendant] === format,
     })
   )
 
   return !!match
 }
 
-const isMarkActive = (editor, format) => {
+const isMarkActive = (editor: BaseEditor, format: string) => {
+  const formatKey = format as keyof Omit<BaseText, "text">
   const marks = Editor.marks(editor)
-  return marks ? marks[format] === true : false
+  return marks ? marks[formatKey] === true : false
 }
 
-const Element = ({ attributes, children, element }) => {
+const Element = ({ attributes, children, element }: { attributes: any, children: ReactNode, element: any }) => {
   const style = { textAlign: element.align }
   switch (element.type) {
     case 'block-quote':
@@ -181,7 +189,7 @@ const Element = ({ attributes, children, element }) => {
   }
 }
 
-const Leaf = ({ attributes, children, leaf }) => {
+const Leaf = ({ attributes, children, leaf }: { attributes: any, children: ReactNode, leaf: any }) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>
   }
@@ -201,7 +209,7 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>
 }
 
-const BlockButton = ({ format, icon }) => {
+const BlockButton = ({ format, icon }: { format: any, icon: React.ReactNode }) => {
   const editor = useSlate()
   return (
     <Button
@@ -210,9 +218,10 @@ const BlockButton = ({ format, icon }) => {
         format,
         TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type'
       )}
-      onMouseDown={event => {
-        event.preventDefault()
-        toggleBlock(editor, format)
+      onMouseDown={(event: any) => {
+        console.log("Clicked");
+        event.preventDefault();
+        toggleBlock(editor, format);
       }}
     >
       <Icon>{icon}</Icon>
@@ -220,12 +229,13 @@ const BlockButton = ({ format, icon }) => {
   )
 }
 
-const MarkButton = ({ format, icon }) => {
+const MarkButton = ({ format, icon }: { format: any, icon: React.ReactNode}) => {
   const editor = useSlate()
   return (
     <Button
       active={isMarkActive(editor, format)}
-      onMouseDown={event => {
+      onMouseDown={(event: any) => {
+        console.log("Clicked")
         event.preventDefault()
         toggleMark(editor, format)
       }}
@@ -274,12 +284,12 @@ const initialValue = [
   {
     type: 'check-list-item',
     checked: false,
-    children: [{ text: 'Host it' }],
+    children: [{ text: 'Host it - DONE!' }],
   },
   {
     type: 'check-list-item',
     checked: false,
-    children: [{ text: 'Convert some files to Typescript' }],
+    children: [{ text: 'Convert some files to Typescript - DONE!' }],
   },
   {
     type: 'check-list-item',
